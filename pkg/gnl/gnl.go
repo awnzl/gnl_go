@@ -25,16 +25,15 @@ func GetNextLine(ctx context.Context, r io.Reader) <-chan []byte {
 
 func GetNextLineErr(ctx context.Context, r io.Reader) (<-chan []byte, <-chan error) {
 	out := make(chan []byte)
-	errc := make(chan error)
+	errc := make(chan error, 1)
 
 	go func() {
 		defer close(out)
-		defer close(errc)
 
 		select {
 		case <-ctx.Done():
-			close(out)
 			errc <-ctx.Err()
+			close(errc)
 			return
 		default:
 			close(errc)
