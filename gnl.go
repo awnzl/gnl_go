@@ -45,6 +45,11 @@ func GetNextLineErr(ctx context.Context, r io.Reader) (<-chan []byte, <-chan err
 				break
 			}
 
+			if err := scanner.Err(); err != nil {
+				errc <- err
+				break
+			}
+
 			select {
 			case <-ctx.Done():
 				errc <-ctx.Err()
