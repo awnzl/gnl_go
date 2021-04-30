@@ -52,9 +52,9 @@ func GetNextLineErr(ctx context.Context, r io.Reader) (<-chan []byte, <-chan err
 
 			select {
 			case <-ctx.Done():
-				errc <-ctx.Err()
+				errc <- ctx.Err()
 				return
-			case out <-scanner.Bytes():
+			case out <- scanner.Bytes():
 			}
 		}
 	}()

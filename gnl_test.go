@@ -65,11 +65,11 @@ func TestReadGetNextLineErr(t *testing.T) {
 				assert.Fail(t, fmt.Sprintf("unexpected error: %v", err))
 				return
 			}
-			break Loop
 		case bts, ok := <-ch:
-			if ok {
-				got = append(got, bts)
+			if !ok {
+				break Loop
 			}
+			got = append(got, bts)
 		}
 	}
 
