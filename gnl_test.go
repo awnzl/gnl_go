@@ -3,6 +3,7 @@ package gnl
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -53,11 +54,23 @@ func TestReadGetNextLineErr(t *testing.T) {
 
 	ctx, _ := context.WithCancel(context.Background())
 	r := strings.NewReader("first string\nsecond string\nthird string")
-	ch, _ := GetNextLineErr(ctx, r)
+	ch, errCh := GetNextLineErr(ctx, r)
 
 	var got [][]byte
-	for v := range ch {
-		got = append(got, v)
+	Loop:
+	for {
+		select {
+		case err, ok := <-errCh:
+			if ok {
+				assert.Fail(t, fmt.Sprintf("unexpected error: %v", err))
+				return
+			}
+			break Loop
+		case bts, ok := <-ch:
+			if ok {
+				got = append(got, bts)
+			}
+		}
 	}
 
 	for i := 0; i < len(wants); i++ {
