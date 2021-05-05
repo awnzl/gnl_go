@@ -2,7 +2,6 @@ package gnl
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -11,13 +10,13 @@ import (
 )
 
 func TestReadGetNextLine(t *testing.T) {
-	wants := [][]byte{
+	want := [][]byte{
 		[]byte("first string"),
 		[]byte("second string"),
 		[]byte("third string"),
 	}
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.Background()
 	r := strings.NewReader("first string\nsecond string\nthird string")
 	ch := GetNextLine(ctx, r)
 
@@ -26,8 +25,8 @@ func TestReadGetNextLine(t *testing.T) {
 		got = append(got, v)
 	}
 
-	for i := 0; i < len(wants); i++ {
-		assert.Equal(t, wants[i], got[i])
+	for i := 0; i < len(want); i++ {
+		assert.Equal(t, want[i], got[i])
 	}
 }
 
@@ -39,20 +38,20 @@ func TestCancelGetNextLine(t *testing.T) {
 	assert.Equal(t, []byte("first string"), <-ch)
 
 	cancel()
-	v, isOpened := <-ch
+	v, isOpen := <-ch
 	assert.Equal(t, []byte(nil), v)
-	assert.Equal(t, false, isOpened)
-	assert.Equal(t, errors.New("context canceled"), ctx.Err())
+	assert.Equal(t, false, isOpen)
+	assert.Equal(t, context.Canceled, ctx.Err())
 }
 
 func TestReadGetNextLineErr(t *testing.T) {
-	wants := [][]byte{
+	want := [][]byte{
 		[]byte("first string"),
 		[]byte("second string"),
 		[]byte("third string"),
 	}
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.Background()
 	r := strings.NewReader("first string\nsecond string\nthird string")
 	ch, errCh := GetNextLineErr(ctx, r)
 
@@ -73,8 +72,8 @@ func TestReadGetNextLineErr(t *testing.T) {
 		}
 	}
 
-	for i := 0; i < len(wants); i++ {
-		assert.Equal(t, wants[i], got[i])
+	for i := 0; i < len(want); i++ {
+		assert.Equal(t, want[i], got[i])
 	}
 }
 
@@ -86,11 +85,11 @@ func TestCancelGetNextLineErr(t *testing.T) {
 	assert.Equal(t, []byte("first string"), <-ch)
 
 	cancel()
-	want := errors.New("context canceled")
+	want := context.Canceled
 	got := <-errCh
 	assert.Equal(t, want, got)
 
-	v, isOpened := <-ch
+	v, isOpen := <-ch
 	assert.Equal(t, []byte(nil), v)
-	assert.Equal(t, false, isOpened)
+	assert.Equal(t, false, isOpen)
 }

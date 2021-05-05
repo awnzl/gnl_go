@@ -42,12 +42,10 @@ func GetNextLineErr(ctx context.Context, r io.Reader) (<-chan []byte, <-chan err
 
 		for {
 			if !scanner.Scan() {
-				break
-			}
-
-			if err := scanner.Err(); err != nil {
-				errc <- err
-				break
+				if err := scanner.Err(); err != nil {
+					errc <- err
+				}
+				return
 			}
 
 			select {
